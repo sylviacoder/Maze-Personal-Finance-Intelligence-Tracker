@@ -26,7 +26,7 @@
     "model_map = {\n",
     "    \"Credit Risk Assessment\": \"models/credit_risk_pipeline.pkl\",\n",
     "    \"Financial Stress Scoring\": \"models/financial_stress_pipeline.pkl\",\n",
-    "    \"Savings Goal Predictor\": \"models/savings_goal.pkl\"\n",
+    "    \"Savings Goal Predictor\": \"models/savings_goal_pipeline.pkl\"\n",
     "}\n",
     "\n",
     "def load_active_model(path):\n",
