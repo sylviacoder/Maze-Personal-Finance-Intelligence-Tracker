@@ -2,18 +2,15 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-st.set_page_config(page_title="Financial Health AI", layout="wide")
-
-st.title("💰 3-in-1 Financial Intelligence Suite")
+st.set_page_config(page_title="MAZA AI", layout="wide")
+st.title("3-in-1 Maze Financial Intelligence")
 st.markdown("---")
 
-# Sidebar for project selection
-project_choice = st.sidebar.selectbox(
+maze_choice = st.sidebar.selectbox(
     "Choose a Project to Evaluate", 
     ["Credit Risk Assessment", "Financial Stress Scoring", "Savings Goal Predictor"]
 )
-
-# Map choices to your specific saved .pkl files
+     
 model_map = {
     "Credit Risk Assessment": "models/credit_risk_pipeline.pkl",
     "Financial Stress Scoring": "models/financial_stress_pipeline.pkl",
@@ -24,13 +21,11 @@ def load_active_model(path):
     return joblib.load(path)
 
 try:
-    # Load the model based on sidebar selection
-    model = load_active_model(model_map[project_choice])
+    model = load_active_model(model_map[maze_choice])
     
-    st.header(f"Predictor: {project_choice}")
+    st.header(f"Predictor: {maze_choice}")
     st.info("The model will automatically process your inputs through the saved pipeline.")
 
-    # Creating Two Columns for User Inputs
     col1, col2 = st.columns(2)
 
     with col1:
@@ -42,21 +37,19 @@ try:
     with col2:
         transaction_count = st.number_input("Number of Monthly Transactions", min_value=0, value=30)
         age = st.number_input("Age", min_value=18, max_value=100, value=30)
-        
-        # Project-Specific Inputs
-        if project_choice == "Credit Risk Assessment":
+    
+        if maze_choice == "Credit Risk Assessment":
             employment_status = st.selectbox("Employment Status", ["Employed", "Self-Employed", "Unemployed"])
             loan_purpose = st.selectbox("Loan Purpose", ["Personal", "Education", "Home", "Medical"])
         
-        elif project_choice == "Financial Stress Scoring":
+        elif maze_choice == "Financial Stress Scoring":
             housing_type = st.selectbox("Housing Type", ["Own", "Rent", "Mortgage"])
             num_dependents = st.number_input("Number of Dependents", min_value=0, value=0)
 
-        elif project_choice == "Savings Goal Predictor":
+        elif maze_choice == "Savings Goal Predictor":
             goal_amount = st.number_input("Target Savings Goal ($)", min_value=0, value=5000)
             time_horizon = st.number_input("Time Horizon (Months)", min_value=1, value=12)
 
-    # DATA PACKAGING & PREDICTION
     if st.button("Generate AI Prediction"):
         data_dict = {
             'monthly_income': [monthly_income],
@@ -66,38 +59,35 @@ try:
             'transaction_count': [transaction_count],
             'age': [age]
         }
-
-        # Add project-specific features to match training columns
-        if project_choice == "Credit Risk Assessment":
+        
+        if maze_choice == "Credit Risk Assessment":
             data_dict['employment_status'] = [employment_status]
             data_dict['loan_purpose'] = [loan_purpose]
-        elif project_choice == "Financial Stress Scoring":
+        elif maze_choice == "Financial Stress Scoring":
              data_dict['housing_type'] = [housing_type]
              data_dict['num_dependents'] = [num_dependents]
-        elif project_choice == "Savings Goal Predictor":
+        elif maze_choice == "Savings Goal Predictor":
              data_dict['goal_amount'] = [goal_amount]
              data_dict['time_horizon'] = [time_horizon]
         
         input_df = pd.DataFrame(data_dict)
         
-        # PREDICTION
         prediction = model.predict(input_df)
-        
-        # Display Results
+    
         st.markdown("---")
         st.subheader("Results")
         
-        if project_choice == "Credit Risk Assessment":
+        if maze_choice == "Credit Risk Assessment":
             risk_labels = {0: "Poor", 1: "Average", 2: "Good"}
             result = risk_labels.get(prediction[0], f"Class {prediction[0]}")
             st.metric(label="Credit Risk Tier", value=result)
         
-        elif project_choice == "Financial Stress Scoring":
+        elif maze_choice == "Financial Stress Scoring":
             st.metric(label="Predicted Stress Level", value=f"Level {prediction[0]}")
             
-        else: # Savings Goal
+        else: 
             status = "Likely to Meet Goal" if prediction[0] == 1 else "Unlikely to Meet Goal"
             st.metric(label="Savings Outcome", value=status)
 
 except FileNotFoundError:
-    st.error(f"Error: Could not find the model file at {model_map[project_choice]}. Please ensure the 'models' folder is on GitHub.")
+    st.error(f"Error: Could not find the model file at {model_map[maze_choice]}. Please ensure the 'models' folder is on GitHub.")
