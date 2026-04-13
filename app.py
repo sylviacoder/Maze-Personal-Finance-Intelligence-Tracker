@@ -1,133 +1,103 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": None,
-   "id": "029bad7e-2afe-47e9-9dce-e109b0f89eab",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import streamlit as st\n",
-    "import pandas as pd\n",
-    "import joblib\n",
-    "\n",
-    "st.set_page_config(page_title=\"Financial Health AI\", layout=\"wide\")\n",
-    "\n",
-    "st.title(\"💰 3-in-1 Financial Intelligence Suite\")\n",
-    "st.markdown(\"---\")\n",
-    "\n",
-    "# Sidebar for project selection\n",
-    "project_choice = st.sidebar.selectbox(\n",
-    "    \"Choose a Project to Evaluate\", \n",
-    "    [\"Credit Risk Assessment\", \"Financial Stress Scoring\", \"Savings Goal Predictor\"]\n",
-    ")\n",
-    "\n",
-    "# Map choices to your specific saved .pkl files\n",
-    "model_map = {\n",
-    "    \"Credit Risk Assessment\": \"models/credit_risk_pipeline.pkl\",\n",
-    "    \"Financial Stress Scoring\": \"models/financial_stress_pipeline.pkl\",\n",
-    "    \"Savings Goal Predictor\": \"models/savings_goal_pipeline.pkl\"\n",
-    "}\n",
-    "\n",
-    "def load_active_model(path):\n",
-    "    return joblib.load(path)\n",
-    "\n",
-    "try:\n",
-    "    # Load the model based on sidebar selection\n",
-    "    model = load_active_model(model_map[project_choice])\n",
-    "    \n",
-    "    st.header(f\"Predictor: {project_choice}\")\n",
-    "    st.info(\"The model will automatically process your inputs through the saved pipeline.\")\n",
-    "\n",
-    "    # Creating Two Columns for User Inputs\n",
-    "    col1, col2 = st.columns(2)\n",
-    "\n",
-    "    with col1:\n",
-    "        monthly_income = st.number_input(\"Monthly Income ($)\", min_value=0, value=5000)\n",
-    "        monthly_expense_total = st.number_input(\"Total Monthly Expenses ($)\", min_value=0, value=3000)\n",
-    "        savings_rate = st.slider(\"Savings Rate (%)\", 0, 100, 20) / 100\n",
-    "        investment_amount = st.number_input(\"Current Investment Amount ($)\", min_value=0, value=1000)\n",
-    "\n",
-    "    with col2:\n",
-    "        transaction_count = st.number_input(\"Number of Monthly Transactions\", min_value=0, value=30)\n",
-    "        age = st.number_input(\"Age\", min_value=18, max_value=100, value=30)\n",
-    "        \n",
-    "        # Project-Specific Inputs\n",
-    "        if project_choice == \"Credit Risk Assessment\":\n",
-    "            employment_status = st.selectbox(\"Employment Status\", [\"Employed\", \"Self-Employed\", \"Unemployed\"])\n",
-    "            loan_purpose = st.selectbox(\"Loan Purpose\", [\"Personal\", \"Education\", \"Home\", \"Medical\"])\n",
-    "        \n",
-    "        elif project_choice == \"Financial Stress Scoring\":\n",
-    "            housing_type = st.selectbox(\"Housing Type\", [\"Own\", \"Rent\", \"Mortgage\"])\n",
-    "            num_dependents = st.number_input(\"Number of Dependents\", min_value=0, value=0)\n",
-    "\n",
-    "        elif project_choice == \"Savings Goal Predictor\":\n",
-    "            goal_amount = st.number_input(\"Target Savings Goal ($)\", min_value=0, value=5000)\n",
-    "            time_horizon = st.number_input(\"Time Horizon (Months)\", min_value=1, value=12)\n",
-    "\n",
-    "    # ---------------------------------------------------------\n",
-    "    # DATA PACKAGING\n",
-    "    # ---------------------------------------------------------\n",
-    "    if st.button(\"Generate AI Prediction\"):\n",
-    "        data_dict = {\n",
-    "            'monthly_income': [monthly_income],\n",
-    "            'monthly_expense_total': [monthly_expense_total],\n",
-    "            'savings_rate': [savings_rate],\n",
-    "            'investment_amount': [investment_amount],\n",
-    "            'transaction_count': [transaction_count],\n",
-    "            'age': [age]\n",
-    "        }\n",
-    "\n",
-    "        # Add project-specific features\n",
-    "        if project_choice == \"Credit Risk Assessment\":\n",
-    "            data_dict['employment_status'] = [employment_status]\n",
-    "            data_dict['loan_purpose'] = [loan_purpose]\n",
-    "        \n",
-    "        input_df = pd.DataFrame(data_dict)\n",
-    "        \n",
-    "        # PREDICTION\n",
-    "        prediction = model.predict(input_df)\n",
-    "        \n",
-    "        # Display Results\n",
-    "        st.markdown(\"---\")\n",
-    "        st.subheader(\"Results\")\n",
-    "        \n",
-    "        if project_choice == \"Credit Risk Assessment\":\n",
-    "            risk_labels = {0: \"Poor\", 1: \"Average\", 2: \"Good\"}\n",
-    "            result = risk_labels.get(prediction[0], f\"Class {prediction[0]}\")\n",
-    "            st.metric(label=\"Credit Risk Tier\", value=result)\n",
-    "        \n",
-    "        elif project_choice == \"Financial Stress Scoring\":\n",
-    "            st.metric(label=\"Predicted Stress Level\", value=f\"Level {prediction[0]}\")\n",
-    "            \n",
-    "        else: # Savings Goal\n",
-    "            status = \"Likely to Meet Goal\" if prediction[0] == 1 else \"Unlikely to Meet Goal\"\n",
-    "            st.metric(label=\"Savings Outcome\", value=status)\n",
-    "\n",
-    "except FileNotFoundError:\n",
-    "    st.error(f\"Error: Could not find the model file at {model_map[project_choice]}. Please run your training scripts first!\")"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.12.4"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
+import streamlit as st
+import pandas as pd
+import joblib
+
+st.set_page_config(page_title="Financial Health AI", layout="wide")
+
+st.title("💰 3-in-1 Financial Intelligence Suite")
+st.markdown("---")
+
+# Sidebar for project selection
+project_choice = st.sidebar.selectbox(
+    "Choose a Project to Evaluate", 
+    ["Credit Risk Assessment", "Financial Stress Scoring", "Savings Goal Predictor"]
+)
+
+# Map choices to your specific saved .pkl files
+model_map = {
+    "Credit Risk Assessment": "models/credit_risk_pipeline.pkl",
+    "Financial Stress Scoring": "models/financial_stress_pipeline.pkl",
+    "Savings Goal Predictor": "models/savings_goal_pipeline.pkl"
 }
+
+def load_active_model(path):
+    return joblib.load(path)
+
+try:
+    # Load the model based on sidebar selection
+    model = load_active_model(model_map[project_choice])
+    
+    st.header(f"Predictor: {project_choice}")
+    st.info("The model will automatically process your inputs through the saved pipeline.")
+
+    # Creating Two Columns for User Inputs
+    col1, col2 = st.columns(2)
+
+    with col1:
+        monthly_income = st.number_input("Monthly Income ($)", min_value=0, value=5000)
+        monthly_expense_total = st.number_input("Total Monthly Expenses ($)", min_value=0, value=3000)
+        savings_rate = st.slider("Savings Rate (%)", 0, 100, 20) / 100
+        investment_amount = st.number_input("Current Investment Amount ($)", min_value=0, value=1000)
+
+    with col2:
+        transaction_count = st.number_input("Number of Monthly Transactions", min_value=0, value=30)
+        age = st.number_input("Age", min_value=18, max_value=100, value=30)
+        
+        # Project-Specific Inputs
+        if project_choice == "Credit Risk Assessment":
+            employment_status = st.selectbox("Employment Status", ["Employed", "Self-Employed", "Unemployed"])
+            loan_purpose = st.selectbox("Loan Purpose", ["Personal", "Education", "Home", "Medical"])
+        
+        elif project_choice == "Financial Stress Scoring":
+            housing_type = st.selectbox("Housing Type", ["Own", "Rent", "Mortgage"])
+            num_dependents = st.number_input("Number of Dependents", min_value=0, value=0)
+
+        elif project_choice == "Savings Goal Predictor":
+            goal_amount = st.number_input("Target Savings Goal ($)", min_value=0, value=5000)
+            time_horizon = st.number_input("Time Horizon (Months)", min_value=1, value=12)
+
+    # DATA PACKAGING & PREDICTION
+    if st.button("Generate AI Prediction"):
+        data_dict = {
+            'monthly_income': [monthly_income],
+            'monthly_expense_total': [monthly_expense_total],
+            'savings_rate': [savings_rate],
+            'investment_amount': [investment_amount],
+            'transaction_count': [transaction_count],
+            'age': [age]
+        }
+
+        # Add project-specific features to match training columns
+        if project_choice == "Credit Risk Assessment":
+            data_dict['employment_status'] = [employment_status]
+            data_dict['loan_purpose'] = [loan_purpose]
+        elif project_choice == "Financial Stress Scoring":
+             data_dict['housing_type'] = [housing_type]
+             data_dict['num_dependents'] = [num_dependents]
+        elif project_choice == "Savings Goal Predictor":
+             data_dict['goal_amount'] = [goal_amount]
+             data_dict['time_horizon'] = [time_horizon]
+        
+        input_df = pd.DataFrame(data_dict)
+        
+        # PREDICTION
+        prediction = model.predict(input_df)
+        
+        # Display Results
+        st.markdown("---")
+        st.subheader("Results")
+        
+        if project_choice == "Credit Risk Assessment":
+            risk_labels = {0: "Poor", 1: "Average", 2: "Good"}
+            result = risk_labels.get(prediction[0], f"Class {prediction[0]}")
+            st.metric(label="Credit Risk Tier", value=result)
+        
+        elif project_choice == "Financial Stress Scoring":
+            st.metric(label="Predicted Stress Level", value=f"Level {prediction[0]}")
+            
+        else: # Savings Goal
+            status = "Likely to Meet Goal" if prediction[0] == 1 else "Unlikely to Meet Goal"
+            st.metric(label="Savings Outcome", value=status)
+
+except FileNotFoundError:
+    st.error(f"Error: Could not find the model file at {model_map[project_choice]}. Please ensure the 'models' folder is on GitHub.")
