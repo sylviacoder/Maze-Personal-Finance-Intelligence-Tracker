@@ -37,30 +37,35 @@ Deployment: Streamlit (In Progress)
 Serialization: Joblib
 
 ## Roadmap
-[x] Data Processing: Robust pipeline development using ColumnTransformer.
+Data Processing: Robust pipeline development using ColumnTransformer.
 
-[x] Model Training: Optimized XGBoost models for Credit Risk and Savings.
+Model Training: Optimized XGBoost models for Credit Risk and Savings.
 
-[x] Logic Implementation: Development of the rule-based Financial Stress engine.
+Logic Implementation: Development of the rule-based Financial Stress engine.
 
-[ ] Streamlit UI: Designing the user interface for interactive financial tracking.
+Streamlit UI: Designing the user interface for interactive financial tracking.
 
-[ ] Final Deployment: Launching the suite on Streamlit Community Cloud.
+Final Deployment: Launching the suite on Streamlit Community Cloud.
 
 ## Getting Started
 ### Environment Setup
 It is recommended to use the Anaconda distribution:   
 
+```bash
 conda create -n maze_env python=3.12
 conda activate maze_env
-
+```
 ### Installation
 Clone the repository:
+```bash
 git clone https://github.com/sylviacoder/Maze-Personal-Finance-Intelligence-Tracker.git
 cd Maze-Personal-Finance-Intelligence-Tracker
+```
 
 Install dependencies:
+```bash
 pip install -r requirements.txt
+```
 
 ## Documentation & Insights
 Detailed findings on behavioral financial patterns and the rationale behind the hybrid logic approach are documented in the PowerPoint presentation located in the docs/ directory.
